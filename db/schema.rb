@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_26_160818) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_27_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,13 +32,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_160818) do
   create_table "payments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "error_message"
-    t.jsonb "payload", default: {}
+    t.jsonb "payload", default: {}, null: false
+    t.string "payload_hash", null: false
     t.uuid "request_uuid", null: false
     t.jsonb "response", default: {}
-    t.integer "retry_count", default: 0
-    t.string "status", default: "pending"
+    t.integer "retry_count", default: 0, null: false
+    t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
+    t.index ["payload_hash"], name: "index_payments_on_payload_hash"
     t.index ["request_uuid"], name: "index_payments_on_request_uuid", unique: true
     t.index ["status"], name: "index_payments_on_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'processing'::character varying, 'completed'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])", name: "status_check"
   end
 end
