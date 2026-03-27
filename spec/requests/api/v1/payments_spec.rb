@@ -61,22 +61,23 @@ RSpec.describe "Api::V1::Payments", type: :request do
       end
     end
 
-    context "when Idempotency-Key is missing" do
-      it "generates a UUID and creates payment" do
-        expect {
-          post "/api/v1/payments", params: valid_params
-        }.to change(Payment, :count).by(1)
-
-        expect(response).to have_http_status(:accepted)
-      end
-    end
-
     # Validation failure
     context "when payload is invalid" do
       it "returns 422" do
         post "/api/v1/payments", params: { amount: -10 }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
+    context "when Idempotency-Key is missing" do
+      it "returns 400 bad request" do
+        post "/api/v1/payments", params: valid_params
+
+        expect(response).to have_http_status(:bad_request)
+
+        body = JSON.parse(response.body)
+        expect(body["error"]).to eq("Idempotency-Key header is required")
       end
     end
   end

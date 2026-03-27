@@ -62,7 +62,9 @@ Routes are defined under `api/v1`:
 
 **Request header**
 
-- **`Idempotency-Key`**: optional but recommended. If missing, a UUID is generated and used.
+**`Idempotency-Key`**
+- Required header for creating payments
+- Ensures safe retries and prevents duplicate processing
 
 **Request body**
 

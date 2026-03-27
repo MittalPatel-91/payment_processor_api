@@ -1,7 +1,13 @@
 class Api::V1::PaymentsController < ApplicationController
   def create
     uuid = request.headers["Idempotency-Key"]
-    uuid ||= SecureRandom.uuid
+
+    unless uuid.present?
+      return render json: {
+        error: "Idempotency-Key header is required"
+      }, status: :bad_request
+    end
+
     Rails.logger.info({ event: "payment_request_received", request_uuid: uuid, payload: payment_params }.to_json)
 
     payment = IdempotencyHandler.find_or_create!(uuid, payment_params)
